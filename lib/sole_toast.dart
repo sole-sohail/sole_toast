@@ -15,5 +15,8 @@
 /// ```
 library;
 
+export 'src/api.dart';
+export 'src/host.dart' show SoleToastLayer;
+export 'src/island.dart' show SoleIslandSpec;
 export 'src/theme.dart';
 export 'src/types.dart';

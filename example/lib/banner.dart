@@ -5,7 +5,7 @@ import 'package:sole_toast/sole_toast.dart';
 ///
 /// Shown when the app is built with `--dart-define=SOLE_SHOWCASE=banner`.
 /// The composition is drawn rotated 90° so a portrait device screenshot
-/// yields a wide landscape banner after rotation (`sips -r -90`).
+/// yields a wide landscape banner after rotation.
 class BannerCanvas extends StatelessWidget {
   const BannerCanvas({super.key});
 
@@ -28,6 +28,7 @@ class BannerCanvas extends StatelessWidget {
             width: w,
             height: h,
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 // Subtle sheen sweep.
                 Positioned.fill(
@@ -46,14 +47,27 @@ class BannerCanvas extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Gooey blobs drawn with the real engine geometry.
-                Positioned.fill(
-                  child: CustomPaint(painter: _GooeyArtPainter()),
+                // Soft glow behind the toast cluster.
+                Positioned(
+                  left: w * 0.40,
+                  top: -h * 0.2,
+                  width: w * 0.64,
+                  height: h * 1.4,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF2563EB).withValues(alpha: 0.10),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
                 // Title block.
                 Positioned(
                   left: w * 0.075,
-                  top: h * 0.30,
+                  top: h * 0.28,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -102,6 +116,59 @@ class BannerCanvas extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Real toasts, rendered by the engine, floating tilted.
+                Positioned(
+                  left: w * 0.505,
+                  top: h * 0.14,
+                  child: _ToastMock(
+                    tilt: -0.045,
+                    style: SoleToastStyle.resolve(
+                        SoleToastType.success, SoleToastMode.light),
+                    phase: SoleToastPhase.success,
+                    title: 'Saved',
+                    description: 'Your changes have been synced.',
+                    pillW: 168,
+                    bodyW: 330,
+                    totalH: 126,
+                    t: 0.93,
+                  ),
+                ),
+                Positioned(
+                  left: w * 0.455,
+                  top: h * 0.68,
+                  child: _ToastMock(
+                    tilt: 0.035,
+                    style: SoleToastStyle.resolve(
+                        SoleToastType.info, SoleToastMode.dark),
+                    phase: SoleToastPhase.loading,
+                    title: 'Uploading 3 files…',
+                    pillW: 236,
+                    bodyW: 236,
+                    totalH: 44,
+                    t: 0,
+                  ),
+                ),
+                Positioned(
+                  left: w * 0.715,
+                  top: h * 0.76,
+                  child: _ToastMock(
+                    tilt: -0.03,
+                    style: SoleToastStyle.resolve(
+                        SoleToastType.warning, SoleToastMode.dark),
+                    phase: SoleToastPhase.warning,
+                    title: 'Storage almost full',
+                    pillW: 246,
+                    bodyW: 246,
+                    totalH: 44,
+                    t: 0,
+                  ),
+                ),
+                // Accent droplets near the cluster.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(painter: _DropletsPainter()),
+                  ),
+                ),
               ],
             ),
           ),
@@ -111,87 +178,159 @@ class BannerCanvas extends StatelessWidget {
   }
 }
 
-/// Draws a large glossy pill→blob morph plus accent droplets using
-/// [soleBlobPath] — the same parametric geometry the toasts use.
-class _GooeyArtPainter extends CustomPainter {
+/// A static, engine-drawn toast used purely for the banner composition.
+class _ToastMock extends StatelessWidget {
+  const _ToastMock({
+    required this.style,
+    required this.phase,
+    required this.title,
+    this.description,
+    required this.pillW,
+    required this.bodyW,
+    required this.totalH,
+    required this.t,
+    required this.tilt,
+  });
+
+  final SoleToastStyle style;
+  final SoleToastPhase phase;
+  final String title;
+  final String? description;
+  final double pillW;
+  final double bodyW;
+  final double totalH;
+  final double t;
+  final double tilt;
+
+  static const double _pillH = 44;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = _pillH + (totalH - _pillH) * t.clamp(0.0, 1.0);
+    return Transform.rotate(
+      angle: tilt,
+      child: SizedBox(
+        width: bodyW,
+        height: height,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _MockBlobPainter(
+                  style: style,
+                  pillW: pillW,
+                  bodyW: bodyW,
+                  totalH: totalH,
+                  t: t,
+                  pillH: _pillH,
+                ),
+              ),
+            ),
+            // Header centered in the pill lobe.
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: _pillH,
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SoleToastIcon(phase: phase, color: style.accent, size: 19),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: style.accent,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.1,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (description != null)
+              Positioned(
+                top: _pillH + 10,
+                left: 18,
+                right: 18,
+                child: Text(
+                  description!,
+                  style: TextStyle(
+                    color: style.ink,
+                    fontSize: 13.5,
+                    height: 1.45,
+                    fontWeight: FontWeight.w400,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MockBlobPainter extends CustomPainter {
+  const _MockBlobPainter({
+    required this.style,
+    required this.pillW,
+    required this.bodyW,
+    required this.totalH,
+    required this.t,
+    required this.pillH,
+  });
+
+  final SoleToastStyle style;
+  final double pillW;
+  final double bodyW;
+  final double totalH;
+  final double t;
+  final double pillH;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = soleBlobPath(
+        pillW: pillW, bodyW: bodyW, totalH: totalH, t: t, pillH: pillH);
+    // Deep soft shadow lifts the card off the dark banner.
+    canvas.drawPath(
+      path.shift(const Offset(0, 14)),
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.55)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22),
+    );
+    canvas.drawPath(path, Paint()..color = style.surface);
+    final sheen = style.sheen;
+    if (sheen != null) {
+      canvas.drawPath(
+          path, Paint()..shader = sheen.createShader(path.getBounds()));
+    }
+    // Hairline keeps dark cards readable on the dark background.
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
+        ..color = style.hasBorder
+            ? style.border
+            : Colors.white.withValues(alpha: 0.16),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MockBlobPainter oldDelegate) => false;
+}
+
+class _DropletsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-
-    void blob({
-      required Offset origin,
-      required double pillW,
-      required double bodyW,
-      required double totalH,
-      required double t,
-      required double pillH,
-      double opacity = 1,
-    }) {
-      final path = soleBlobPath(
-        pillW: pillW,
-        bodyW: bodyW,
-        totalH: totalH,
-        t: t,
-        pillH: pillH,
-      ).shift(origin);
-      // Soft shadow.
-      canvas.drawPath(
-        path.shift(const Offset(0, 10)),
-        Paint()
-          ..color = Colors.black.withValues(alpha: 0.5 * opacity)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
-      );
-      // Glossy black fill.
-      canvas.drawPath(path,
-          Paint()..color = const Color(0xFF07080A).withValues(alpha: opacity));
-      // Specular sheen.
-      canvas.drawPath(
-        path,
-        Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.30 * opacity),
-              Colors.white.withValues(alpha: 0.05 * opacity),
-              Colors.transparent,
-            ],
-            stops: const [0, 0.45, 1],
-          ).createShader(path.getBounds()),
-      );
-      // Hairline border.
-      canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2
-          ..color = Colors.white.withValues(alpha: 0.22 * opacity),
-      );
-    }
-
-    // Main morph: pill melting into a body — mid-morph so the gooey
-    // junction is visible.
-    blob(
-      origin: Offset(w * 0.56, h * 0.16),
-      pillW: w * 0.16,
-      bodyW: w * 0.34,
-      totalH: h * 0.52,
-      t: 0.82,
-      pillH: h * 0.115,
-    );
-    // Companion pill higher up, barely morphing.
-    blob(
-      origin: Offset(w * 0.80, h * 0.60),
-      pillW: w * 0.10,
-      bodyW: w * 0.16,
-      totalH: h * 0.24,
-      t: 0.45,
-      pillH: h * 0.085,
-      opacity: 0.85,
-    );
-
-    // Accent droplets.
     void droplet(Offset c, double r, Color color) {
       canvas.drawCircle(
         c.translate(0, 4),
@@ -208,10 +347,10 @@ class _GooeyArtPainter extends CustomPainter {
       );
     }
 
-    droplet(Offset(w * 0.525, h * 0.78), h * 0.030, const Color(0xFF4ADE80));
-    droplet(Offset(w * 0.93, h * 0.28), h * 0.024, const Color(0xFFF87171));
-    droplet(Offset(w * 0.62, h * 0.86), h * 0.019, const Color(0xFFFBBF24));
-    droplet(Offset(w * 0.965, h * 0.52), h * 0.027, const Color(0xFF60A5FA));
+    droplet(Offset(w * 0.475, h * 0.30), 11, const Color(0xFF4ADE80));
+    droplet(Offset(w * 0.955, h * 0.24), 8, const Color(0xFFF87171));
+    droplet(Offset(w * 0.665, h * 0.585), 7, const Color(0xFFFBBF24));
+    droplet(Offset(w * 0.975, h * 0.60), 9, const Color(0xFF60A5FA));
   }
 
   @override

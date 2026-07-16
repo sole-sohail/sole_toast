@@ -99,8 +99,7 @@ class _SoleToastLayerState extends State<SoleToastLayer> {
       right: 0,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        verticalDirection:
-            top ? VerticalDirection.down : VerticalDirection.up,
+        verticalDirection: top ? VerticalDirection.down : VerticalDirection.up,
         children: cards,
       ),
     );

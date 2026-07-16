@@ -157,8 +157,8 @@ abstract final class SoleToast {
     Duration? duration,
     SoleToastMode? mode,
   }) async {
-    final id = show(loading,
-        type: SoleToastType.info, duration: duration, mode: mode);
+    final id =
+        show(loading, type: SoleToastType.info, duration: duration, mode: mode);
     // Flag the loading phase after creation so the spinner shows.
     _manager.update(id, loading: true);
     try {
@@ -206,7 +206,9 @@ abstract final class SoleToast {
       action: action,
       clearAction: clearAction,
     );
-    if (title != null) _announce(title, description, type ?? SoleToastType.info);
+    if (title != null) {
+      _announce(title, description, type ?? SoleToastType.info);
+    }
   }
 
   /// Dismisses one toast by [id], or all toasts when omitted. The toast
@@ -214,14 +216,12 @@ abstract final class SoleToast {
   static void dismiss([Object? id]) => _manager.dismiss(id);
 
   /// Dismisses every toast of [type] (visible and queued).
-  static void dismissByType(SoleToastType type) =>
-      _manager.dismissByType(type);
+  static void dismissByType(SoleToastType type) => _manager.dismissByType(type);
 
   /// Dismisses everything.
   static void dismissAll() => _manager.dismiss();
 
-  static void _announce(
-      String title, String? description, SoleToastType type) {
+  static void _announce(String title, String? description, SoleToastType type) {
     final message = description == null ? title : '$title: $description';
     // Fire-and-forget; assertive channel for problems.
     // `sendAnnouncement` does not exist at this package's minimum Flutter
@@ -230,10 +230,10 @@ abstract final class SoleToast {
     SemanticsService.announce(
       message,
       TextDirection.ltr,
-      assertiveness: type == SoleToastType.error ||
-              type == SoleToastType.warning
-          ? Assertiveness.assertive
-          : Assertiveness.polite,
+      assertiveness:
+          type == SoleToastType.error || type == SoleToastType.warning
+              ? Assertiveness.assertive
+              : Assertiveness.polite,
     );
   }
 }

@@ -217,8 +217,7 @@ class SoleToastCardState extends State<SoleToastCard>
   void _onHeaderMeasured(Size size) {
     if (!mounted || size.width <= 0) return;
     // Clamp so an extreme title can never push the pill past the body width.
-    final available =
-        _bodyW - 2 * _pillPadH - (_isIsland ? _islandW + 8 : 0);
+    final available = _bodyW - 2 * _pillPadH - (_isIsland ? _islandW + 8 : 0);
     final clamped = math.min(size.width, math.max(available, 40.0));
     final changed = (clamped - _headerContentW).abs() > 0.5;
     _headerContentW = clamped;
@@ -343,13 +342,14 @@ class SoleToastCardState extends State<SoleToastCard>
 
   int get _displayMsExpanded {
     final total = (data.duration ?? config.displayDuration).inMilliseconds;
-    final ms = total - _ms(_kExpandDelayMs) - (_kMorphCollapseSec * 1000).round();
+    final ms =
+        total - _ms(_kExpandDelayMs) - (_kMorphCollapseSec * 1000).round();
     return math.max(ms, 800);
   }
 
   void _scheduleExpand({int? delayMs}) {
-    Future<void>.delayed(Duration(milliseconds: _ms(delayMs ?? _kExpandDelayMs)),
-        () {
+    Future<void>.delayed(
+        Duration(milliseconds: _ms(delayMs ?? _kExpandDelayMs)), () {
       if (!mounted || !_hasBody) return;
       if (_stage != SoleCardStage.compact) return;
       _expand();
@@ -372,7 +372,8 @@ class SoleToastCardState extends State<SoleToastCard>
     }
     final sim = config.spring
         ? springSimulation(
-            morphSpring(durationSeconds: _kMorphExpandSec, bounce: config.bounce),
+            morphSpring(
+                durationSeconds: _kMorphExpandSec, bounce: config.bounce),
             from: _morph.value)
         : null;
     final future = sim != null
@@ -525,13 +526,11 @@ class SoleToastCardState extends State<SoleToastCard>
     });
     if (_stage == SoleCardStage.shown && _showProgress) {
       _progress.animateTo(0,
-          duration: Duration(milliseconds: _remainingMs),
-          curve: Curves.linear);
+          duration: Duration(milliseconds: _remainingMs), curve: Curves.linear);
     }
   }
 
-  bool get _showProgress =>
-      data.showProgressOverride ?? config.showProgress;
+  bool get _showProgress => data.showProgressOverride ?? config.showProgress;
 
   void _restartProgress() {
     if (!_showProgress) return;
@@ -630,16 +629,16 @@ class SoleToastCardState extends State<SoleToastCard>
       _drag.value = _dragDx;
       _drag
           .animateTo(direction * _bodyW * 0.8,
-              duration: Duration(milliseconds: _ms(180)),
-              curve: Curves.easeIn)
+              duration: Duration(milliseconds: _ms(180)), curve: Curves.easeIn)
           .whenComplete(_finish);
       // Track the fling on the card even though _dragging is false.
       _dragging = false;
     } else {
       _drag.value = _dragDx;
-      _drag.animateWith(
-          springSimulation(morphSpring(durationSeconds: 0.4, bounce: 0.2),
-              from: _dragDx, to: 0));
+      _drag.animateWith(springSimulation(
+          morphSpring(durationSeconds: 0.4, bounce: 0.2),
+          from: _dragDx,
+          to: 0));
       _resumeTimer();
     }
   }
@@ -699,13 +698,10 @@ class SoleToastCardState extends State<SoleToastCard>
     final withFx = AnimatedBuilder(
       animation: Listenable.merge([_inOut, _squish, _shake]),
       builder: (context, child) {
-        final squishI =
-            math.sin(_squish.value.clamp(-0.2, 1.4) * math.pi);
+        final squishI = math.sin(_squish.value.clamp(-0.2, 1.4) * math.pi);
         final bScale = config.bounce / 0.4;
-        final compressY =
-            (_squishIsCollapse ? 0.035 : 0.12) * bScale * squishI;
-        final expandX =
-            (_squishIsCollapse ? 0.018 : 0.06) * bScale * squishI;
+        final compressY = (_squishIsCollapse ? 0.035 : 0.12) * bScale * squishI;
+        final expandX = (_squishIsCollapse ? 0.018 : 0.06) * bScale * squishI;
         final shakeV = _shake.isAnimating || _shake.value > 0
             ? math.sin(_shake.value * math.pi * 6) * (1 - _shake.value) * 3
             : 0.0;
@@ -717,16 +713,14 @@ class SoleToastCardState extends State<SoleToastCard>
                 (_pillH + 26);
         final dragOpacity = _dragDx == 0
             ? 1.0
-            : (1 - _dragDx.abs() / (_kSwipeThreshold * 1.5))
-                .clamp(0.0, 1.0);
+            : (1 - _dragDx.abs() / (_kSwipeThreshold * 1.5)).clamp(0.0, 1.0);
         return Opacity(
           opacity: (_inOut.value * dragOpacity).clamp(0.0, 1.0),
           child: Transform.translate(
             offset: Offset(_dragDx + shakeV, travel),
             child: Transform(
               alignment: Alignment.topCenter,
-              transform: Matrix4.diagonal3Values(
-                  1 + expandX, 1 - compressY, 1),
+              transform: Matrix4.diagonal3Values(1 + expandX, 1 - compressY, 1),
               child: child,
             ),
           ),
@@ -1002,8 +996,7 @@ class SoleToastCardState extends State<SoleToastCard>
               final pw = math.min(_dims.pillW, _dims.bodyW);
               double left;
               if (_isIsland) {
-                left =
-                    (_dims.pillLeft ?? 0) + _islandW + 8;
+                left = (_dims.pillLeft ?? 0) + _islandW + 8;
               } else {
                 left = (_dims.bodyW - _headerContentW) / 2;
               }
@@ -1073,8 +1066,7 @@ class _RevealClipper extends CustomClipper<Path> {
       Radius.circular(dims.pillH / 2),
     ));
     final cw = dims.currentW;
-    path.addRect(
-        Rect.fromLTWH((dims.bodyW - cw) / 2, 0, cw, dims.currentH));
+    path.addRect(Rect.fromLTWH((dims.bodyW - cw) / 2, 0, cw, dims.currentH));
     return path;
   }
 

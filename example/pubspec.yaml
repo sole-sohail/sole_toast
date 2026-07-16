@@ -1,0 +1,19 @@
+name: sole_toast_example
+description: Demo app for the sole_toast package.
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sole_toast:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

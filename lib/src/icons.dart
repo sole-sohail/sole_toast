@@ -175,8 +175,8 @@ class _SoleIconPainter extends CustomPainter {
     }
   }
 
-  Path _circle() =>
-      Path()..addOval(Rect.fromCircle(center: const Offset(12, 12), radius: 10));
+  Path _circle() => Path()
+    ..addOval(Rect.fromCircle(center: const Offset(12, 12), radius: 10));
 
   /// Draws [path] trimmed to the first [t] fraction of its length.
   void _trimmed(Canvas canvas, Path path, double t, Paint paint) {

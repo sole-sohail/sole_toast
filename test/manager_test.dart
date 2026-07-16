@@ -47,8 +47,8 @@ void main() {
     manager.dismiss(3); // queued → silently dropped
     expect(manager.queueLength, 0);
     manager.dismiss(1); // active → graceful dismiss requested
-    expect(manager.active.firstWhere((d) => d.id == 1).dismissRequested,
-        isTrue);
+    expect(
+        manager.active.firstWhere((d) => d.id == 1).dismissRequested, isTrue);
   });
 
   test('dismissByType clears matching queued and active toasts', () {
@@ -59,8 +59,9 @@ void main() {
     manager.dismissByType(SoleToastType.error);
     expect(manager.queueLength, 0);
     expect(
-        manager.active.where((d) => d.type == SoleToastType.error).every(
-            (d) => d.dismissRequested),
+        manager.active
+            .where((d) => d.type == SoleToastType.error)
+            .every((d) => d.dismissRequested),
         isTrue);
     expect(
         manager.active
@@ -81,8 +82,8 @@ void main() {
   test('island mode is single-slot: a second show morphs the first', () {
     manager.islandActive = true;
     final firstId = manager.show(_toast('a', title: 'first'));
-    final secondId = manager.show(
-        _toast('b', type: SoleToastType.error, title: 'second'));
+    final secondId =
+        manager.show(_toast('b', type: SoleToastType.error, title: 'second'));
     expect(secondId, firstId);
     expect(manager.active, hasLength(1));
     expect(manager.active.first.title, 'second');

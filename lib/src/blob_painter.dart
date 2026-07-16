@@ -143,8 +143,7 @@ class SoleBlobClipper extends CustomClipper<Path> {
   final SoleBlobDims dims;
 
   @override
-  Path getClip(Size size) =>
-      dims.ready ? dims.buildPath() : Path();
+  Path getClip(Size size) => dims.ready ? dims.buildPath() : Path();
 
   @override
   bool shouldReclip(SoleBlobClipper oldClipper) => oldClipper.dims != dims;

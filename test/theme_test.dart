@@ -6,8 +6,8 @@ void main() {
   group('SoleToastStyle.resolve', () {
     test('island override is pure black regardless of mode', () {
       for (final mode in SoleToastMode.values) {
-        final style = SoleToastStyle.resolve(SoleToastType.success, mode,
-            island: true);
+        final style =
+            SoleToastStyle.resolve(SoleToastType.success, mode, island: true);
         expect(style.surface, const Color(0xFF000000));
         expect(style.blurSigma, 0);
         expect(style.hasBorder, isTrue);
@@ -15,8 +15,8 @@ void main() {
     });
 
     test('glossy has blur and sheen; follows brightness', () {
-      final light = SoleToastStyle.resolve(
-          SoleToastType.info, SoleToastMode.glossy);
+      final light =
+          SoleToastStyle.resolve(SoleToastType.info, SoleToastMode.glossy);
       final dark = SoleToastStyle.resolve(
           SoleToastType.info, SoleToastMode.glossy,
           brightness: Brightness.dark);
@@ -40,8 +40,7 @@ void main() {
 
     test('each type maps to a distinct accent', () {
       final accents = SoleToastType.values
-          .map((t) =>
-              SoleToastStyle.resolve(t, SoleToastMode.light).accent)
+          .map((t) => SoleToastStyle.resolve(t, SoleToastMode.light).accent)
           .toSet();
       expect(accents, hasLength(SoleToastType.values.length));
     });

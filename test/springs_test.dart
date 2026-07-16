@@ -22,18 +22,18 @@ void main() {
   group('morphSpring', () {
     test('settles near target within ~1.5x duration', () {
       for (final bounce in [0.05, 0.4, 0.8]) {
-        final sim = springSimulation(
-            morphSpring(durationSeconds: 0.9, bounce: bounce));
+        final sim =
+            springSimulation(morphSpring(durationSeconds: 0.9, bounce: bounce));
         expect(sim.x(1.35), closeTo(1.0, 0.02),
             reason: 'bounce $bounce should settle');
       }
     });
 
     test('high bounce overshoots, low bounce does not', () {
-      final bouncy = springSimulation(
-          morphSpring(durationSeconds: 0.9, bounce: 0.8));
-      final subtle = springSimulation(
-          morphSpring(durationSeconds: 0.9, bounce: 0.05));
+      final bouncy =
+          springSimulation(morphSpring(durationSeconds: 0.9, bounce: 0.8));
+      final subtle =
+          springSimulation(morphSpring(durationSeconds: 0.9, bounce: 0.05));
       double maxOf(SpringSimulation sim) {
         var max = 0.0;
         for (var t = 0.0; t < 2.0; t += 0.008) {

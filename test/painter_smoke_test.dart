@@ -9,8 +9,8 @@ void main() {
     testWidgets('paints at t=0 / 0.5 / 1 without errors', (tester) async {
       final dims = SoleBlobDims()
         ..update(pillW: 140, bodyW: 340, totalH: 150, morphT: 0);
-      final style = SoleToastStyle.resolve(
-          SoleToastType.success, SoleToastMode.glossy);
+      final style =
+          SoleToastStyle.resolve(SoleToastType.success, SoleToastMode.glossy);
 
       await tester.pumpWidget(
         Directionality(
@@ -55,8 +55,8 @@ void main() {
           Directionality(
             textDirection: TextDirection.ltr,
             child: Center(
-              child: SoleToastIcon(
-                  phase: phase, color: const Color(0xFF4CAF50)),
+              child:
+                  SoleToastIcon(phase: phase, color: const Color(0xFF4CAF50)),
             ),
           ),
         );

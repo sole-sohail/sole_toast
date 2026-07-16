@@ -158,8 +158,16 @@ class SoleToastStyle {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: dark
-                ? const [Color(0x2EFFFFFF), Color(0x0AFFFFFF), Color(0x05FFFFFF)]
-                : const [Color(0xA6FFFFFF), Color(0x26FFFFFF), Color(0x14FFFFFF)],
+                ? const [
+                    Color(0x2EFFFFFF),
+                    Color(0x0AFFFFFF),
+                    Color(0x05FFFFFF)
+                  ]
+                : const [
+                    Color(0xA6FFFFFF),
+                    Color(0x26FFFFFF),
+                    Color(0x14FFFFFF)
+                  ],
             stops: const [0.0, 0.55, 1.0],
           ),
         );

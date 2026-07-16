@@ -81,8 +81,7 @@ void main() {
   testWidgets('simple toast never expands and exits after its duration',
       (tester) async {
     var exited = false;
-    final data =
-        SoleToastData(id: 2, type: SoleToastType.info, title: 'Hello');
+    final data = SoleToastData(id: 2, type: SoleToastType.info, title: 'Hello');
     await tester.pumpWidget(_harness(data, onExited: (_) => exited = true));
     await tester.pump();
     await _pumpFor(tester, 500);

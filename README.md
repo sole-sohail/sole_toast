@@ -16,8 +16,7 @@ landing squish, and an iPhone **Dynamic Island** choreography.
 
 **Zero runtime dependencies.** No assets, no icon fonts, no third-party
 packages — every shape, icon, and animation is painted and simulated with
-Flutter primitives. Even the banner above was rendered by the library's own
-blob engine.
+Flutter primitives.
 
 ## Gallery
 
@@ -313,6 +312,13 @@ curves: the expand, collapse, squish, resize and drag-return all share one
 feels like one material. The package is a few small files — a path builder,
 a painter, one stateful card, and a tiny queue manager — with no runtime
 dependencies to audit or version-match.
+
+The geometry is even exposed as [`soleBlobPath`] for your own creative use —
+this piece was drawn with it, on-device:
+
+<p align="center">
+  <img src="doc/images/engine_art.png" alt="Art rendered with soleBlobPath by the library's own engine" width="85%"/>
+</p>
 
 ## FAQ
 

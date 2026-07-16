@@ -44,6 +44,17 @@ class DemoPage extends StatefulWidget {
 }
 
 class _DemoPageState extends State<DemoPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (mounted) {
+        SoleToast.success('Welcome',
+            description: 'The gooey toast with a Dynamic Island trick.');
+      }
+    });
+  }
+
   SoleToastMode _mode = SoleToastMode.glossy;
   SoleIslandMode _islandMode = SoleIslandMode.auto;
   double _bounce = 0.4;

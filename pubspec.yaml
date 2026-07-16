@@ -4,7 +4,9 @@ description: >-
   light/dark/glossy modes, semantic types, and iPhone Dynamic Island
   choreography. Zero dependencies.
 version: 0.1.0
-# repository: https://github.com/sohailahmad/sole_toast  # set before publishing
+homepage: https://github.com/sole-sohail/sole_toast
+repository: https://github.com/sole-sohail/sole_toast
+issue_tracker: https://github.com/sole-sohail/sole_toast/issues
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

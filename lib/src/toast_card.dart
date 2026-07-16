@@ -125,17 +125,22 @@ class SoleToastCardState extends State<SoleToastCard>
   double get _islandW => widget.island.capsuleRect.width;
   double get _pillPadH => _isIsland ? 14.0 : 12.0;
 
-  /// Outer pill width for the current stage/content.
+  /// Whether this toast has expandable content below the pill. In island
+  /// mode the title itself lives in the drop-down sheet (there is no room
+  /// for text beside the hardware cutout), so island toasts always expand.
+  bool get _hasExpandable => _isIsland ? _actionSuccess == null : _hasBody;
+
+  /// Outer pill width for the current stage/content. The island capsule
+  /// only ever grows an icon lobe — the status-bar clock and battery flank
+  /// the cutout, leaving no room for a title beside it.
   double get _pillOuterW {
     if (_isIsland) {
       switch (_stage) {
         case SoleCardStage.measuring:
         case SoleCardStage.entering:
           return _islandW;
-        case SoleCardStage.islandIcon:
-          return _islandW + 8 + 18 + 14;
         default:
-          return _islandW + 8 + _headerContentW + _pillPadH;
+          return _islandW + 8 + 18 + 14;
       }
     }
     return _headerContentW + 2 * _pillPadH;
@@ -202,7 +207,7 @@ class SoleToastCardState extends State<SoleToastCard>
       // measurement callbacks animate the new dimensions in.
       setState(() {});
       // An update can add or remove the body → re-evaluate the timeline.
-      if (_stage == SoleCardStage.compact && _hasBody) {
+      if (_stage == SoleCardStage.compact && _hasExpandable) {
         _scheduleExpand();
       } else if (_stage == SoleCardStage.shown) {
         _restartTimer();
@@ -214,11 +219,18 @@ class SoleToastCardState extends State<SoleToastCard>
   // Measurement plumbing
   // ---------------------------------------------------------------------
 
+  /// Maximum header-content width. In island mode the pill's left edge is
+  /// pinned to the island cutout, so only the half of the body that extends
+  /// to the right of the island is available — never let the capsule run
+  /// under the status-bar icons or off screen.
+  double get _headerMaxW => _isIsland
+      ? (_bodyW - _islandW) / 2 - 8 - _pillPadH
+      : _bodyW - 2 * _pillPadH;
+
   void _onHeaderMeasured(Size size) {
     if (!mounted || size.width <= 0) return;
     // Clamp so an extreme title can never push the pill past the body width.
-    final available = _bodyW - 2 * _pillPadH - (_isIsland ? _islandW + 8 : 0);
-    final clamped = math.min(size.width, math.max(available, 40.0));
+    final clamped = math.min(size.width, math.max(_headerMaxW, 40.0));
     final changed = (clamped - _headerContentW).abs() > 0.5;
     _headerContentW = clamped;
     _afterMeasure(changed);
@@ -306,8 +318,8 @@ class SoleToastCardState extends State<SoleToastCard>
       _inOut.forward().whenComplete(() {
         if (!mounted) return;
         setState(() => _stage = SoleCardStage.compact);
-        if (!_hasBody) _triggerSquish(collapse: false, delayMs: 45);
-        if (_hasBody) {
+        if (!_hasExpandable) _triggerSquish(collapse: false, delayMs: 45);
+        if (_hasExpandable) {
           _scheduleExpand();
         } else {
           _startTimer(_displayMsSimple, _exit);
@@ -320,20 +332,17 @@ class SoleToastCardState extends State<SoleToastCard>
     if (!mounted) return;
     setState(() => _stage = SoleCardStage.islandIcon);
     _animateDims(pw: _pillOuterW);
-    Future<void>.delayed(Duration(milliseconds: _ms(_kIslandIconHoldMs)), () {
+    Future<void>.delayed(
+        Duration(milliseconds: _ms(_kIslandIconHoldMs + _kIslandTitleHoldMs)),
+        () {
       if (!mounted || _stage != SoleCardStage.islandIcon) return;
-      setState(() => _stage = SoleCardStage.islandTitle);
-      _animateDims(pw: _pillOuterW);
-      Future<void>.delayed(Duration(milliseconds: _ms(_kIslandTitleHoldMs)),
-          () {
-        if (!mounted || _stage != SoleCardStage.islandTitle) return;
-        setState(() => _stage = SoleCardStage.compact);
-        if (_hasBody) {
-          _scheduleExpand(delayMs: 60);
-        } else {
-          _startTimer(_displayMsSimple, _exit);
-        }
-      });
+      setState(() => _stage = SoleCardStage.compact);
+      if (_hasExpandable) {
+        // Title + content slide down beneath the island.
+        _scheduleExpand(delayMs: 60);
+      } else {
+        _startTimer(_displayMsSimple, _exit);
+      }
     });
   }
 
@@ -350,7 +359,7 @@ class SoleToastCardState extends State<SoleToastCard>
   void _scheduleExpand({int? delayMs}) {
     Future<void>.delayed(
         Duration(milliseconds: _ms(delayMs ?? _kExpandDelayMs)), () {
-      if (!mounted || !_hasBody) return;
+      if (!mounted || !_hasExpandable) return;
       if (_stage != SoleCardStage.compact) return;
       _expand();
     });
@@ -591,7 +600,7 @@ class SoleToastCardState extends State<SoleToastCard>
   void _onTap() {
     if (_stage == SoleCardStage.collapsing ||
         _stage == SoleCardStage.lingering) {
-      if (!_hasBody) return;
+      if (!_hasExpandable) return;
       _timer?.cancel();
       _morph.stop();
       _expand(reExpand: true);
@@ -788,9 +797,9 @@ class SoleToastCardState extends State<SoleToastCard>
     final iconVisible = !_isIsland ||
         measuring ||
         _stage.index >= SoleCardStage.islandIcon.index;
-    final titleVisible = !_isIsland ||
-        measuring ||
-        _stage.index >= SoleCardStage.islandTitle.index;
+    // Island: no room for text beside the cutout (the status-bar clock and
+    // battery flank it) — the title renders in the drop-down sheet instead.
+    final showTitle = !_isIsland;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -818,22 +827,16 @@ class SoleToastCardState extends State<SoleToastCard>
             ),
           ),
         ),
-        const SizedBox(width: 7),
-        AnimatedOpacity(
-          opacity: titleVisible ? 1 : 0,
-          duration: Duration(milliseconds: _ms(240)),
+        if (showTitle) ...[
+          const SizedBox(width: 7),
           // Cap the title so an extreme string ellipsizes instead of pushing
           // the pill past the body width. Applied identically in the
           // measuring copy so measured and live layouts always agree.
-          child: ConstrainedBox(
+          ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: math.max(
                 40,
-                _bodyW -
-                    2 * _pillPadH -
-                    25 -
-                    (_isIsland ? _islandW + 8 : 0) -
-                    (showTimestampInline ? 70 : 0),
+                _headerMaxW - 25 - (showTimestampInline ? 70 : 0),
               ),
             ),
             child: Text(
@@ -849,7 +852,7 @@ class SoleToastCardState extends State<SoleToastCard>
               ),
             ),
           ),
-        ),
+        ],
         if (showTimestampInline) ...[
           const SizedBox(width: 8),
           Text(
@@ -876,6 +879,36 @@ class SoleToastCardState extends State<SoleToastCard>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(height: _pillH),
+        // Island mode: the title lives here — first thing revealed as the
+        // sheet slides down beneath the island.
+        if (_isIsland)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              10,
+              16,
+              description == null && action == null && !_showProgress
+                  ? 16
+                  : 0,
+            ),
+            child: AnimatedOpacity(
+              opacity: bodyOn ? 1 : 0,
+              duration: Duration(milliseconds: _ms(_kBodyFadeMs)),
+              curve: _kSmoothEase,
+              child: Text(
+                _title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: style.accent,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.1,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+          ),
         if (description != null || action != null || _showProgress)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 15),

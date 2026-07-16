@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/images/hero.png" alt="Sole Toast — a gooey, morphing toast for Flutter" width="100%"/>
+  <img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/hero.png" alt="Sole Toast — a gooey, morphing toast for Flutter" width="100%"/>
 </p>
 
 # Sole Toast
@@ -29,9 +29,9 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
     <td align="center"><b>Dark · warning</b></td>
   </tr>
   <tr>
-    <td><img src="doc/images/glossy_success.png" alt="Glossy success toast" width="260"/></td>
-    <td><img src="doc/images/light_info.png" alt="Light mode info toast" width="260"/></td>
-    <td><img src="doc/images/dark_warning.png" alt="Dark mode warning toast" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/glossy_success.png" alt="Glossy success toast" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/light_info.png" alt="Light mode info toast" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/dark_warning.png" alt="Dark mode warning toast" width="260"/></td>
   </tr>
   <tr>
     <td align="center"><b>Error + action button</b></td>
@@ -39,9 +39,9 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
     <td align="center"><b>Countdown progress</b></td>
   </tr>
   <tr>
-    <td><img src="doc/images/glossy_error_action.png" alt="Error toast with retry action" width="260"/></td>
-    <td><img src="doc/images/loading.png" alt="Loading spinner pill" width="260"/></td>
-    <td><img src="doc/images/progress.png" alt="Toast with countdown progress bar" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/glossy_error_action.png" alt="Error toast with retry action" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/loading.png" alt="Loading spinner pill" width="260"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/progress.png" alt="Toast with countdown progress bar" width="260"/></td>
   </tr>
 </table>
 
@@ -53,8 +53,8 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
     <td align="center"><b>2 — the sheet melts down beneath it</b></td>
   </tr>
   <tr>
-    <td><img src="doc/images/island_icon.png" alt="Icon docked beside the Dynamic Island" width="380"/></td>
-    <td><img src="doc/images/island_sheet.png" alt="Sheet expanded beneath the Dynamic Island" width="380"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/island_icon.png" alt="Icon docked beside the Dynamic Island" width="380"/></td>
+    <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/island_sheet.png" alt="Sheet expanded beneath the Dynamic Island" width="380"/></td>
   </tr>
 </table>
 
@@ -129,7 +129,7 @@ Or add it to `pubspec.yaml` manually:
 
 ```yaml
 dependencies:
-  sole_toast: ^0.1.0
+  sole_toast: ^0.1.1
 ```
 
 ## Setup
@@ -277,7 +277,7 @@ SoleToast.config =
 
 ## The example app
 
-<img src="doc/images/demo.png" alt="Sole Toast example app" width="300" align="right"/>
+<img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/demo.png" alt="Sole Toast example app" width="300" align="right"/>
 
 The [example](example/) is a full playground: switch between the three
 surface modes, force the Dynamic Island preview on any device, toggle the
@@ -317,7 +317,7 @@ The geometry is even exposed as [`soleBlobPath`] for your own creative use —
 this piece was drawn with it, on-device:
 
 <p align="center">
-  <img src="doc/images/engine_art.png" alt="Art rendered with soleBlobPath by the library's own engine" width="85%"/>
+  <img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/engine_art.png" alt="Art rendered with soleBlobPath by the library's own engine" width="85%"/>
 </p>
 
 ## FAQ

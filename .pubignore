@@ -1,3 +1,16 @@
-# Keep the published archive lightweight — README images are served from
-# the GitHub repository (pub.dev resolves relative links via `repository`).
+# NOTE: .pubignore REPLACES .gitignore for pub packaging, so the build
+# artifacts must be repeated here.
+.dart_tool/
+build/
+pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Keep the archive lightweight: README images are embedded as absolute
+# raw.githubusercontent.com URLs, and the example's platform scaffolding is
+# regenerated with `flutter create .`.
 doc/
+example/ios/
+example/android/
+example/web/
+example/.metadata

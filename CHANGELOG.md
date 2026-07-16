@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- README images now use absolute URLs so they render on pub.dev.
+- Much smaller package archive: documentation media and the example's
+  generated platform folders are excluded from publishing.
+
 ## 0.1.0
 
 Initial release.

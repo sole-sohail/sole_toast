@@ -887,9 +887,7 @@ class SoleToastCardState extends State<SoleToastCard>
               16,
               10,
               16,
-              description == null && action == null && !_showProgress
-                  ? 16
-                  : 0,
+              description == null && action == null && !_showProgress ? 16 : 0,
             ),
             child: AnimatedOpacity(
               opacity: bodyOn ? 1 : 0,

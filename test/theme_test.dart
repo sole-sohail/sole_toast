@@ -45,11 +45,21 @@ void main() {
       expect(accents, hasLength(SoleToastType.values.length));
     });
 
-    test('action button tints derive from type', () {
+    test('action button tints derive from the accent', () {
       final success =
           SoleToastStyle.resolve(SoleToastType.success, SoleToastMode.light);
-      expect(success.actionBg, const Color(0xFFC8E6C9));
-      expect(success.actionFg, const Color(0xFF4CAF50));
+      expect(success.actionFg, success.accent);
+      expect(success.actionBg.withValues(alpha: 1.0), success.accent);
+      expect(success.actionBg.a, lessThan(0.5));
+    });
+
+    test('light accents are vivid (high saturation)', () {
+      for (final type in SoleToastType.values) {
+        final accent = SoleToastStyle.resolve(type, SoleToastMode.light).accent;
+        final hsl = HSLColor.fromColor(accent);
+        expect(hsl.saturation, greaterThan(0.55),
+            reason: '$type light accent should be saturated');
+      }
     });
   });
 

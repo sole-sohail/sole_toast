@@ -1,0 +1,3 @@
+# Keep the published archive lightweight — README images are served from
+# the GitHub repository (pub.dev resolves relative links via `repository`).
+doc/

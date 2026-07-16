@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sole_toast/sole_toast.dart';
 import 'package:sole_toast/src/blob_painter.dart';
-import 'package:sole_toast/src/icons.dart';
 
 void main() {
   group('SoleBlobPainter', () {

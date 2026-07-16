@@ -52,31 +52,19 @@ class SoleToastStyle {
   bool get hasBlur => blurSigma > 0;
   bool get hasBorder => border.a > 0;
 
-  // Accent palettes (ported from goey-toast CSS).
+  // Accent palettes — high-saturation so types read sharply.
+  // Light surfaces get deep vivid tones; dark surfaces get luminous ones.
   static const _accentLight = <SoleToastType, Color>{
-    SoleToastType.success: Color(0xFF4CAF50),
-    SoleToastType.error: Color(0xFFE53935),
-    SoleToastType.warning: Color(0xFFC49000),
-    SoleToastType.info: Color(0xFF1E88E5),
+    SoleToastType.success: Color(0xFF16A34A),
+    SoleToastType.error: Color(0xFFDC2626),
+    SoleToastType.warning: Color(0xFFD97706),
+    SoleToastType.info: Color(0xFF2563EB),
   };
   static const _accentDark = <SoleToastType, Color>{
-    SoleToastType.success: Color(0xFF66BB6A),
-    SoleToastType.error: Color(0xFFEF5350),
-    SoleToastType.warning: Color(0xFFFFB300),
-    SoleToastType.info: Color(0xFF42A5F5),
-  };
-  // Action button tints (light mode, from goey-toast CSS).
-  static const _actionBgLight = <SoleToastType, Color>{
-    SoleToastType.success: Color(0xFFC8E6C9),
-    SoleToastType.error: Color(0xFFFFCDD2),
-    SoleToastType.warning: Color(0xFFFFECB3),
-    SoleToastType.info: Color(0xFFBBDEFB),
-  };
-  static const _actionBgDark = <SoleToastType, Color>{
-    SoleToastType.success: Color(0xFF1B5E20),
-    SoleToastType.error: Color(0xFFB71C1C),
-    SoleToastType.warning: Color(0xFF4A3800),
-    SoleToastType.info: Color(0xFF0D47A1),
+    SoleToastType.success: Color(0xFF4ADE80),
+    SoleToastType.error: Color(0xFFF87171),
+    SoleToastType.warning: Color(0xFFFBBF24),
+    SoleToastType.info: Color(0xFF60A5FA),
   };
 
   static const _shadowsLight = <BoxShadow>[
@@ -116,25 +104,27 @@ class SoleToastStyle {
 
     switch (mode) {
       case SoleToastMode.light:
+        final accent = _accentLight[type]!;
         return SoleToastStyle(
           surface: const Color(0xFFFFFFFF),
           ink: const Color(0xFF444444),
           inkMuted: const Color(0xFF999999),
-          accent: _accentLight[type]!,
-          actionBg: _actionBgLight[type]!,
-          actionFg: _accentLight[type]!,
+          accent: accent,
+          actionBg: accent.withValues(alpha: 0.13),
+          actionFg: accent,
           border: const Color(0x00000000),
           blurSigma: 0,
           shadows: _shadowsLight,
         );
       case SoleToastMode.dark:
+        final accent = _accentDark[type]!;
         return SoleToastStyle(
           surface: const Color(0xFF1A1A1A),
           ink: const Color(0xFFE0E0E0),
           inkMuted: const Color(0xFF8A8A8A),
-          accent: _accentDark[type]!,
-          actionBg: _actionBgDark[type]!,
-          actionFg: _accentDark[type]!,
+          accent: accent,
+          actionBg: accent.withValues(alpha: 0.22),
+          actionFg: accent,
           border: const Color(0x00000000),
           blurSigma: 0,
           shadows: _shadowsDark,

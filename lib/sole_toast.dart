@@ -16,7 +16,9 @@
 library;
 
 export 'src/api.dart';
+export 'src/blob_path.dart' show soleBlobPath;
 export 'src/host.dart' show SoleToastLayer;
+export 'src/icons.dart' show SoleToastIcon;
 export 'src/island.dart' show SoleIslandSpec;
 export 'src/theme.dart';
 export 'src/types.dart';

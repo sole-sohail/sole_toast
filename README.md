@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="doc/images/hero.png" alt="Sole Toast — a gooey, morphing toast for Flutter" width="100%"/>
+</p>
+
 # Sole Toast
 
 [![pub package](https://img.shields.io/pub/v/sole_toast.svg)](https://pub.dev/packages/sole_toast)
@@ -12,14 +16,54 @@ landing squish, and an iPhone **Dynamic Island** choreography.
 
 **Zero runtime dependencies.** No assets, no icon fonts, no third-party
 packages — every shape, icon, and animation is painted and simulated with
-Flutter primitives.
+Flutter primitives. Even the banner above was rendered by the library's own
+blob engine.
 
-<!-- demo GIFs: run example/ and record — placeholders for repo media -->
+## Gallery
+
+Real, unedited captures from the example app on an iPhone 16 Pro.
+
+<table>
+  <tr>
+    <td align="center"><b>Glossy · success</b></td>
+    <td align="center"><b>Light · info</b></td>
+    <td align="center"><b>Dark · warning</b></td>
+  </tr>
+  <tr>
+    <td><img src="doc/images/glossy_success.png" alt="Glossy success toast" width="260"/></td>
+    <td><img src="doc/images/light_info.png" alt="Light mode info toast" width="260"/></td>
+    <td><img src="doc/images/dark_warning.png" alt="Dark mode warning toast" width="260"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Error + action button</b></td>
+    <td align="center"><b>Promise (loading pill)</b></td>
+    <td align="center"><b>Countdown progress</b></td>
+  </tr>
+  <tr>
+    <td><img src="doc/images/glossy_error_action.png" alt="Error toast with retry action" width="260"/></td>
+    <td><img src="doc/images/loading.png" alt="Loading spinner pill" width="260"/></td>
+    <td><img src="doc/images/progress.png" alt="Toast with countdown progress bar" width="260"/></td>
+  </tr>
+</table>
+
+### The Dynamic Island choreography
+
+<table>
+  <tr>
+    <td align="center"><b>1 — icon docks beside the island</b></td>
+    <td align="center"><b>2 — the sheet melts down beneath it</b></td>
+  </tr>
+  <tr>
+    <td><img src="doc/images/island_icon.png" alt="Icon docked beside the Dynamic Island" width="380"/></td>
+    <td><img src="doc/images/island_sheet.png" alt="Sheet expanded beneath the Dynamic Island" width="380"/></td>
+  </tr>
+</table>
 
 ---
 
 ## Table of contents
 
+- [Gallery](#gallery)
 - [Features](#features)
 - [Installation](#installation)
 - [Setup](#setup)
@@ -216,6 +260,27 @@ SoleToast.config =
   shake, and a selection click on action taps (disable with
   `enableHaptics: false`).
 
+## The example app
+
+<img src="doc/images/demo.png" alt="Sole Toast example app" width="300" align="right"/>
+
+The [example](example/) is a full playground: switch between the three
+surface modes, force the Dynamic Island preview on any device, toggle the
+description body and countdown progress bar, drag the bounce slider from
+subtle to jelly, and fire every variant — including the action button with
+a success-label morph-back, a promise toast, and an in-place update.
+
+```bash
+cd example
+flutter create .   # one-time: generates ios/ and android/
+flutter run
+```
+
+On iPhones with a real Dynamic Island the choreography activates
+automatically — a welcome toast plays on launch.
+
+<br clear="right"/>
+
 ## How it works
 
 The blob is not a rounded rectangle being resized. Each frame, a parametric
@@ -262,8 +327,9 @@ it's beautiful.
 
 ## Author
 
-Built and maintained by **Sohail Ahmad**
-([sole-sohail](https://github.com/sole-sohail)).
+Built and maintained by **Sohail Ahmad** —
+[sohailahmad.com](https://sohailahmad.com) ·
+[GitHub @sole-sohail](https://github.com/sole-sohail)
 
 ## License
 

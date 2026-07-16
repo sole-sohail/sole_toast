@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sole_toast/sole_toast.dart';
+
+import 'banner.dart';
 
 void main() => runApp(const DemoApp());
 
@@ -29,30 +35,103 @@ class _DemoAppState extends State<DemoApp> {
       home: DemoPage(
         onToggleTheme: () => setState(() => _themeMode =
             _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark),
+        onSetTheme: (mode) => setState(() => _themeMode = mode),
       ),
     );
   }
 }
 
 class DemoPage extends StatefulWidget {
-  const DemoPage({super.key, required this.onToggleTheme});
+  const DemoPage(
+      {super.key, required this.onToggleTheme, required this.onSetTheme});
 
   final VoidCallback onToggleTheme;
+  final ValueChanged<ThemeMode> onSetTheme;
 
   @override
   State<DemoPage> createState() => _DemoPageState();
 }
 
 class _DemoPageState extends State<DemoPage> {
+  /// Screenshot showcase mode — used to regenerate the README media:
+  /// `flutter build ios --simulator --dart-define=SOLE_SHOWCASE=variant`
+  static const _defineShowcase = String.fromEnvironment('SOLE_SHOWCASE');
+
+  String? get _showcase {
+    if (_defineShowcase.isNotEmpty) return _defineShowcase;
+    if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+      return Platform.environment['SOLE_SHOWCASE'];
+    }
+    return null;
+  }
+
+  bool _bannerMode = false;
+
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 900), () {
-      if (mounted) {
+      if (!mounted) return;
+      final showcase = _showcase;
+      if (showcase != null) {
+        _runShowcase(showcase);
+      } else {
         SoleToast.success('Welcome',
             description: 'The gooey toast with a Dynamic Island trick.');
       }
     });
+  }
+
+  /// Fires a single, deterministic variant for README screenshots.
+  void _runShowcase(String variant) {
+    const long = Duration(seconds: 60);
+    SoleToastConfig base(SoleToastMode mode,
+            {SoleIslandMode island = SoleIslandMode.never,
+            bool progress = false}) =>
+        SoleToastConfig(mode: mode, islandMode: island, showProgress: progress);
+    switch (variant) {
+      case 'demo':
+        break; // just the settings screen
+      case 'glossy_success':
+        SoleToast.config = base(SoleToastMode.glossy);
+        SoleToast.success('Saved',
+            description: 'Your changes have been synced.', duration: long);
+      case 'glossy_error_action':
+        SoleToast.config = base(SoleToastMode.glossy);
+        SoleToast.error('Payment failed',
+            description: 'Your card was declined. Please try again.',
+            action: SoleToastAction(label: 'Retry', onPressed: () {}),
+            duration: long);
+      case 'light_info':
+        widget.onSetTheme(ThemeMode.light);
+        SoleToast.config = base(SoleToastMode.light);
+        SoleToast.info('New version available',
+            description: 'Sole Toast 0.2.0 is ready to install.',
+            duration: long);
+      case 'dark_warning':
+        widget.onSetTheme(ThemeMode.light);
+        SoleToast.config = base(SoleToastMode.dark);
+        SoleToast.warning('Storage almost full',
+            description: 'Free up space to keep syncing.', duration: long);
+      case 'loading':
+        SoleToast.config = base(SoleToastMode.glossy);
+        SoleToast.promise<void>(Completer<void>().future,
+            loading: 'Uploading 3 files…',
+            success: (_) => 'Done',
+            error: (_) => 'Failed');
+      case 'progress':
+        SoleToast.config = base(SoleToastMode.glossy, progress: true);
+        SoleToast.success('Report ready',
+            description: 'Q2 attendance report has been generated.',
+            duration: const Duration(seconds: 20));
+      case 'island':
+        SoleToast.config =
+            base(SoleToastMode.glossy, island: SoleIslandMode.auto);
+        SoleToast.success('Saved',
+            description: 'Your changes have been synced.', duration: long);
+      case 'banner':
+        setState(() => _bannerMode = true);
+    }
   }
 
   SoleToastMode _mode = SoleToastMode.glossy;
@@ -76,6 +155,7 @@ class _DemoPageState extends State<DemoPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_bannerMode) return const BannerCanvas();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sole Toast'),

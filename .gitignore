@@ -3,3 +3,7 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 pubspec.lock
+
+# The app monorepo's root .gitignore excludes every `doc/` (dartdoc output);
+# re-include ours — it holds the README media.
+!doc/

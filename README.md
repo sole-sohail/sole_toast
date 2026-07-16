@@ -6,7 +6,7 @@
 
 [![pub package](https://img.shields.io/pub/v/sole_toast.svg)](https://pub.dev/packages/sole_toast)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android-lightgrey)
+![platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![dependencies](https://img.shields.io/badge/runtime%20dependencies-zero-brightgreen)
 
 A gooey, morphing toast for Flutter. A compact pill lands on screen, the body
@@ -64,6 +64,7 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
 ## Table of contents
 
 - [Gallery](#gallery)
+- [Platform support](#platform-support)
 - [Features](#features)
 - [Installation](#installation)
 - [Setup](#setup)
@@ -77,6 +78,21 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
 - [FAQ](#faq)
 - [Credits](#credits)
 - [License](#license)
+
+## Platform support
+
+Sole Toast is pure Dart/Flutter — no native code, no platform channels, no
+plugins — so it runs on **every platform Flutter targets**:
+
+| Android | iOS | Web | macOS | Windows | Linux |
+| :-: | :-: | :-: | :-: | :-: | :-: |
+| ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Platform notes: the **Dynamic Island choreography** activates automatically
+only on island iPhones (everywhere else the standard top-center drop is
+used — or force the island preview with `SoleIslandMode.always`). **Haptics**
+fire where the OS supports them and no-op silently elsewhere. The **glossy**
+backdrop blur renders on all platforms with Flutter's default renderer.
 
 ## Features
 

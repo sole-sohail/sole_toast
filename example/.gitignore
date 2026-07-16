@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Platform folders are generated on demand (see README): flutter create .
+ios/
+android/
+web/
+macos/
+windows/
+linux/

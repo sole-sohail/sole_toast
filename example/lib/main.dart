@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sole_toast/sole_toast.dart';
 
@@ -57,13 +55,7 @@ class _DemoPageState extends State<DemoPage> {
   /// `flutter build ios --simulator --dart-define=SOLE_SHOWCASE=variant`
   static const _defineShowcase = String.fromEnvironment('SOLE_SHOWCASE');
 
-  String? get _showcase {
-    if (_defineShowcase.isNotEmpty) return _defineShowcase;
-    if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-      return Platform.environment['SOLE_SHOWCASE'];
-    }
-    return null;
-  }
+  String? get _showcase => _defineShowcase.isEmpty ? null : _defineShowcase;
 
   bool _bannerMode = false;
 

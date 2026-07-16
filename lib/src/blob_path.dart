@@ -13,7 +13,10 @@ import 'dart:ui';
 ///
 /// [centered] grows the body symmetrically with the pill fixed at the
 /// horizontal center (used for top-center drops and the Dynamic Island);
-/// otherwise the pill anchors to the left edge.
+/// otherwise the pill anchors to the left edge. [pillLeft] overrides the
+/// pill's horizontal offset within the body (centered mode only) — used by
+/// the Dynamic Island capsule, which hugs the hardware cutout rather than
+/// the body center.
 Path soleBlobPath({
   required double pillW,
   required double bodyW,
@@ -21,9 +24,10 @@ Path soleBlobPath({
   required double t,
   required double pillH,
   bool centered = true,
+  double? pillLeft,
 }) {
   return centered
-      ? _centerAnchored(pillW, bodyW, totalH, t, pillH)
+      ? _centerAnchored(pillW, bodyW, totalH, t, pillH, pillLeft)
       : _leftAnchored(pillW, bodyW, totalH, t, pillH);
 }
 
@@ -72,11 +76,12 @@ Path _leftAnchored(double pw, double bw, double th, double t, double ph) {
     ..close();
 }
 
-Path _centerAnchored(double pw, double bw, double th, double t, double ph) {
+Path _centerAnchored(
+    double pw, double bw, double th, double t, double ph, double? pillLeft) {
   final pr = ph / 2;
   final pillW = math.min(pw, bw);
-  // Pill is ALWAYS centered at the final body width position.
-  final pillOffset = (bw - pillW) / 2;
+  // Pill is ALWAYS at its final-body-width position (centered by default).
+  final pillOffset = pillLeft ?? (bw - pillW) / 2;
   final bodyH = ph + (th - ph) * t;
 
   if (t <= 0 || bodyH - ph < 8) return _purePill(pillOffset, pillW, ph);

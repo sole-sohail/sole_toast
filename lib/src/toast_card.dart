@@ -29,17 +29,9 @@ enum SoleCardStage {
   gone,
 }
 
-// Timeline constants (ported from goey-toast v0.5.0).
-const _kEnterMs = 260;
-const _kExitMs = 220;
-const _kExpandDelayMs = 330;
-const _kMorphExpandSec = 0.9;
-const _kMorphCollapseSec = 0.9;
-const _kLingerMs = 800;
-const _kBodyFadeMs = 350;
+// Stage durations live in [SoleToastTimings] (configurable); only
+// choreography-independent constants remain here.
 const _kActionSuccessLingerMs = 1200;
-const _kIslandIconHoldMs = 420;
-const _kIslandTitleHoldMs = 350;
 const _kSwipeThreshold = 100.0;
 const _kSmoothEase = Cubic(0.4, 0, 0.2, 1);
 
@@ -72,7 +64,7 @@ class SoleToastCardState extends State<SoleToastCard>
   late final AnimationController _resize =
       AnimationController.unbounded(vsync: this);
   late final AnimationController _inOut = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: _kEnterMs));
+      vsync: this, duration: const Duration(milliseconds: 260));
   late final AnimationController _squish =
       AnimationController.unbounded(vsync: this);
   late final AnimationController _headerSquish =
@@ -113,6 +105,7 @@ class SoleToastCardState extends State<SoleToastCard>
 
   SoleToastData get data => widget.data;
   SoleToastConfig get config => widget.config;
+  SoleToastTimings get _t => widget.config.timings;
   bool get _isIsland => widget.island.active;
   double get _pillH =>
       _isIsland ? widget.island.capsuleRect.height : config.pillHeight;
@@ -126,23 +119,15 @@ class SoleToastCardState extends State<SoleToastCard>
   double get _pillPadH => _isIsland ? 14.0 : 12.0;
 
   /// Whether this toast has expandable content below the pill. In island
-  /// mode the title itself lives in the drop-down sheet (there is no room
-  /// for text beside the hardware cutout), so island toasts always expand.
+  /// mode the icon and title live in the drop-down sheet, so island toasts
+  /// always expand.
   bool get _hasExpandable => _isIsland ? _actionSuccess == null : _hasBody;
 
-  /// Outer pill width for the current stage/content. The island capsule
-  /// only ever grows an icon lobe — the status-bar clock and battery flank
-  /// the cutout, leaving no room for a title beside it.
+  /// Outer pill width for the current stage/content.
   double get _pillOuterW {
-    if (_isIsland) {
-      switch (_stage) {
-        case SoleCardStage.measuring:
-        case SoleCardStage.entering:
-          return _islandW;
-        default:
-          return _islandW + 8 + 18 + 14;
-      }
-    }
+    // The island capsule never grows sideways — the status-bar clock and
+    // battery flank the cutout, so everything reveals downward instead.
+    if (_isIsland) return _islandW;
     return _headerContentW + 2 * _pillPadH;
   }
 
@@ -219,13 +204,8 @@ class SoleToastCardState extends State<SoleToastCard>
   // Measurement plumbing
   // ---------------------------------------------------------------------
 
-  /// Maximum header-content width. In island mode the pill's left edge is
-  /// pinned to the island cutout, so only the half of the body that extends
-  /// to the right of the island is available — never let the capsule run
-  /// under the status-bar icons or off screen.
-  double get _headerMaxW => _isIsland
-      ? (_bodyW - _islandW) / 2 - 8 - _pillPadH
-      : _bodyW - 2 * _pillPadH;
+  /// Maximum header-content width for standard (non-island) toasts.
+  double get _headerMaxW => _bodyW - 2 * _pillPadH;
 
   void _onHeaderMeasured(Size size) {
     if (!mounted || size.width <= 0) return;
@@ -303,18 +283,17 @@ class SoleToastCardState extends State<SoleToastCard>
       totalH: _measuredTotalH,
       morphT: 0,
       pillH: _pillH,
-      pillLeft: _isIsland ? (_bodyW - _islandW) / 2 : null,
-      clearPillLeft: !_isIsland,
+      clearPillLeft: true,
     );
     _haptic(HapticFeedback.lightImpact);
     if (_isIsland) {
       _stage = SoleCardStage.entering;
       setState(() {});
-      _inOut.duration = Duration(milliseconds: _ms(150));
-      _inOut.forward().whenComplete(_islandIconStage);
+      _inOut.duration = Duration(milliseconds: _ms(_t.islandEnterMs));
+      _inOut.forward().whenComplete(_islandChinStage);
     } else {
       setState(() => _stage = SoleCardStage.entering);
-      _inOut.duration = Duration(milliseconds: _ms(_kEnterMs));
+      _inOut.duration = Duration(milliseconds: _ms(_t.enterMs));
       _inOut.forward().whenComplete(() {
         if (!mounted) return;
         setState(() => _stage = SoleCardStage.compact);
@@ -328,18 +307,45 @@ class SoleToastCardState extends State<SoleToastCard>
     }
   }
 
-  void _islandIconStage() {
+  /// Height of the island icon "chin" — the gooey pocket that melts out
+  /// beneath the cutout to reveal the type icon before the sheet continues.
+  static const double _kIslandChinH = 42;
+
+  /// Island draw 1: the capsule grows a chin below the cutout with the icon
+  /// centered in it. The status bar flanks the island on both sides, so the
+  /// capsule never grows sideways — everything reveals downward.
+  void _islandChinStage() {
     if (!mounted) return;
-    setState(() => _stage = SoleCardStage.islandIcon);
-    _animateDims(pw: _pillOuterW);
-    Future<void>.delayed(
-        Duration(milliseconds: _ms(_kIslandIconHoldMs + _kIslandTitleHoldMs)),
-        () {
+    setState(() {
+      _stage = SoleCardStage.islandIcon;
+      // Content is revealed by the growing blob's clip, not by opacity.
+      _bodyVisible = true;
+    });
+    final denom = _measuredTotalH - _pillH;
+    final tChin = denom <= 0 ? 1.0 : (_kIslandChinH / denom).clamp(0.0, 1.0);
+    if (_reduced) {
+      _morph.value = tChin;
+      _afterChin();
+      return;
+    }
+    _morph.stop();
+    _morph
+        .animateWith(springSimulation(
+            morphSpring(
+                durationSeconds: _t.morphMs / 2000, bounce: config.bounce),
+            from: _morph.value,
+            to: tChin))
+        .whenComplete(_afterChin);
+  }
+
+  void _afterChin() {
+    if (!mounted || _stage != SoleCardStage.islandIcon) return;
+    Future<void>.delayed(Duration(milliseconds: _ms(_t.islandIconHoldMs)), () {
       if (!mounted || _stage != SoleCardStage.islandIcon) return;
       setState(() => _stage = SoleCardStage.compact);
       if (_hasExpandable) {
-        // Title + content slide down beneath the island.
-        _scheduleExpand(delayMs: 60);
+        // Draw 2: the sheet melts on downward — title, then description.
+        _scheduleExpand(delayMs: 1);
       } else {
         _startTimer(_displayMsSimple, _exit);
       }
@@ -351,14 +357,13 @@ class SoleToastCardState extends State<SoleToastCard>
 
   int get _displayMsExpanded {
     final total = (data.duration ?? config.displayDuration).inMilliseconds;
-    final ms =
-        total - _ms(_kExpandDelayMs) - (_kMorphCollapseSec * 1000).round();
+    final ms = total - _ms(_t.expandDelayMs) - _t.collapseMs;
     return math.max(ms, 800);
   }
 
   void _scheduleExpand({int? delayMs}) {
     Future<void>.delayed(
-        Duration(milliseconds: _ms(delayMs ?? _kExpandDelayMs)), () {
+        Duration(milliseconds: _ms(delayMs ?? _t.expandDelayMs)), () {
       if (!mounted || !_hasExpandable) return;
       if (_stage != SoleCardStage.compact) return;
       _expand();
@@ -382,13 +387,14 @@ class SoleToastCardState extends State<SoleToastCard>
     final sim = config.spring
         ? springSimulation(
             morphSpring(
-                durationSeconds: _kMorphExpandSec, bounce: config.bounce),
+                durationSeconds: _t.morphMs / 1000, bounce: config.bounce),
             from: _morph.value)
         : null;
     final future = sim != null
         ? _morph.animateWith(sim)
         : _morph.animateTo(1,
-            duration: const Duration(milliseconds: 600), curve: _kSmoothEase);
+            duration: Duration(milliseconds: _t.morphMs * 2 ~/ 3),
+            curve: _kSmoothEase);
     if (!reExpand) {
       _triggerSquish(collapse: false, delayMs: 80);
       _headerSquishTo(1);
@@ -421,12 +427,11 @@ class SoleToastCardState extends State<SoleToastCard>
     }
     final future = (preDismiss || !config.spring)
         ? _morph.animateTo(0,
-            duration:
-                Duration(milliseconds: (_kMorphCollapseSec * 1000).round()),
+            duration: Duration(milliseconds: _t.collapseMs),
             curve: _kSmoothEase)
         : _morph.animateWith(springSimulation(
             morphSpring(
-                durationSeconds: _kMorphCollapseSec,
+                durationSeconds: _t.collapseMs / 1000,
                 bounce: config.bounce * 0.875),
             from: _morph.value,
             to: 0));
@@ -444,7 +449,7 @@ class SoleToastCardState extends State<SoleToastCard>
     }
     setState(() => _stage = SoleCardStage.lingering);
     final linger =
-        _actionSuccess != null ? _kActionSuccessLingerMs : _kLingerMs;
+        _actionSuccess != null ? _kActionSuccessLingerMs : _t.lingerMs;
     _startTimer(_ms(linger), _exit);
   }
 
@@ -456,15 +461,15 @@ class SoleToastCardState extends State<SoleToastCard>
       return;
     }
     setState(() => _stage = SoleCardStage.exiting);
-    _inOut.reverseDuration = Duration(milliseconds: _ms(_kExitMs));
+    _inOut.reverseDuration = Duration(milliseconds: _ms(_t.exitMs));
     _inOut.reverse().whenComplete(_finish);
   }
 
   void _exitIsland() {
     setState(() => _stage = SoleCardStage.exiting);
-    // Shrink back to the bare capsule, then fade into the island.
-    _animateDims(pw: _islandW);
-    Future<void>.delayed(Duration(milliseconds: _ms(260)), () {
+    // The capsule is already bare after the collapse — just fade it back
+    // into the island.
+    Future<void>.delayed(Duration(milliseconds: _ms(30)), () {
       if (!mounted) return;
       _inOut.reverseDuration = Duration(milliseconds: _ms(150));
       _inOut.reverse().whenComplete(_finish);
@@ -571,8 +576,8 @@ class SoleToastCardState extends State<SoleToastCard>
       _squish.stop();
       _squish.value = 0;
       _squish.animateWith(springSimulation(squishSpring(
-        duration: collapse ? _kMorphCollapseSec : 0.6,
-        defaultDuration: collapse ? _kMorphCollapseSec : 0.6,
+        duration: collapse ? _t.collapseMs / 1000 : 0.6,
+        defaultDuration: collapse ? _t.collapseMs / 1000 : 0.6,
         bounce: config.bounce,
       )));
     }
@@ -794,40 +799,13 @@ class SoleToastCardState extends State<SoleToastCard>
         config.showTimestamp &&
         _actionSuccess == null &&
         !_isIsland;
-    final iconVisible = !_isIsland ||
-        measuring ||
-        _stage.index >= SoleCardStage.islandIcon.index;
-    // Island: no room for text beside the cutout (the status-bar clock and
-    // battery flank it) — the title renders in the drop-down sheet instead.
-    final showTitle = !_isIsland;
-
+    // The live header only renders for standard toasts; the island capsule
+    // is bare (its icon lives in the chin below the cutout).
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AnimatedScale(
-          scale: iconVisible ? 1 : 0.4,
-          duration: Duration(milliseconds: _ms(220)),
-          curve: Curves.easeOutBack,
-          child: AnimatedOpacity(
-            opacity: iconVisible ? 1 : 0,
-            duration: Duration(milliseconds: _ms(180)),
-            child: AnimatedSwitcher(
-              duration: Duration(milliseconds: _ms(200)),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) => ScaleTransition(
-                scale: Tween(begin: 0.5, end: 1.0).animate(animation),
-                child: FadeTransition(opacity: animation, child: child),
-              ),
-              child: SoleToastIcon(
-                key: ValueKey(_phase),
-                phase: _phase,
-                color: style.accent,
-              ),
-            ),
-          ),
-        ),
-        if (showTitle) ...[
+        _phaseIcon(style, size: 18),
+        ...[
           const SizedBox(width: 7),
           // Cap the title so an extreme string ellipsizes instead of pushing
           // the pill past the body width. Applied identically in the
@@ -869,6 +847,26 @@ class SoleToastCardState extends State<SoleToastCard>
     );
   }
 
+  /// The phase icon with its crossfade-on-change transition — shared by the
+  /// standard header and the island chin.
+  Widget _phaseIcon(SoleToastStyle style, {required double size}) {
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: _ms(200)),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) => ScaleTransition(
+        scale: Tween(begin: 0.5, end: 1.0).animate(animation),
+        child: FadeTransition(opacity: animation, child: child),
+      ),
+      child: SoleToastIcon(
+        key: ValueKey(_phase),
+        phase: _phase,
+        color: style.accent,
+        size: size,
+      ),
+    );
+  }
+
   Widget _bodyColumn(SoleToastStyle style, {bool measuring = false}) {
     final description = _actionSuccess == null ? data.description : null;
     final action = _actionSuccess == null ? data.action : null;
@@ -879,34 +877,36 @@ class SoleToastCardState extends State<SoleToastCard>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(height: _pillH),
-        // Island mode: the title lives here — first thing revealed as the
-        // sheet slides down beneath the island.
-        if (_isIsland)
+        // Island mode: the chin icon and title live here, revealed by the
+        // sheet's growing clip — draw 1 shows the icon centered beneath the
+        // cutout, draw 2 continues down through the title and description.
+        if (_isIsland) ...[
+          SizedBox(
+            height: SoleToastCardState._kIslandChinH,
+            child: Center(child: _phaseIcon(style, size: 22)),
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               16,
-              10,
+              0,
               16,
               description == null && action == null && !_showProgress ? 16 : 0,
             ),
-            child: AnimatedOpacity(
-              opacity: bodyOn ? 1 : 0,
-              duration: Duration(milliseconds: _ms(_kBodyFadeMs)),
-              curve: _kSmoothEase,
-              child: Text(
-                _title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: style.accent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.1,
-                  decoration: TextDecoration.none,
-                ),
+            child: Text(
+              _title,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: style.accent,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.1,
+                decoration: TextDecoration.none,
               ),
             ),
           ),
+        ],
         if (description != null || action != null || _showProgress)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 15),
@@ -917,7 +917,7 @@ class SoleToastCardState extends State<SoleToastCard>
                 if (description != null)
                   AnimatedOpacity(
                     opacity: bodyOn ? 1 : 0,
-                    duration: Duration(milliseconds: _ms(_kBodyFadeMs)),
+                    duration: Duration(milliseconds: _ms(_t.bodyFadeMs)),
                     curve: _kSmoothEase,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -953,7 +953,7 @@ class SoleToastCardState extends State<SoleToastCard>
                   SizedBox(height: description != null ? 12 : 4),
                   AnimatedOpacity(
                     opacity: bodyOn ? 1 : 0,
-                    duration: Duration(milliseconds: _ms(_kBodyFadeMs + 100)),
+                    duration: Duration(milliseconds: _ms(_t.bodyFadeMs + 100)),
                     curve: const Interval(0.22, 1, curve: _kSmoothEase),
                     child: GestureDetector(
                       onTap: () => _onActionTap(action),
@@ -981,7 +981,7 @@ class SoleToastCardState extends State<SoleToastCard>
                   const SizedBox(height: 12),
                   AnimatedOpacity(
                     opacity: bodyOn ? 1 : 0,
-                    duration: Duration(milliseconds: _ms(_kBodyFadeMs)),
+                    duration: Duration(milliseconds: _ms(_t.bodyFadeMs)),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: SizedBox(
@@ -1015,62 +1015,52 @@ class SoleToastCardState extends State<SoleToastCard>
         // Body content laid out at its natural (full) height; the reveal
         // clipper crops it to the growing blob so nothing overflows.
         Positioned(top: 0, left: 0, right: 0, child: _bodyColumn(style)),
-        // Header pinned to the pill lobe, horizontally tracking the pill.
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: _pillH,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_dims, _headerSquish]),
-            builder: (context, child) {
-              final pw = math.min(_dims.pillW, _dims.bodyW);
-              double left;
-              if (_isIsland) {
-                left = (_dims.pillLeft ?? 0) + _islandW + 8;
-              } else {
-                left = (_dims.bodyW - _headerContentW) / 2;
-              }
-              final squishV = _headerSquish.value.clamp(-0.3, 1.3);
-              return Padding(
-                padding: EdgeInsets.only(left: math.max(left, 0)),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: ClipRect(
-                    child: SizedBox(
-                      // +1.5 slack absorbs sub-pixel rounding; the blob path
-                      // is the true visual boundary anyway.
-                      width: math.max(
-                            0,
-                            _isIsland
-                                ? pw - _islandW - 8 - _pillPadH / 2
-                                : _headerContentW,
-                          ) +
-                          1.5,
-                      height: _pillH,
-                      child: OverflowBox(
-                        alignment: Alignment.centerLeft,
-                        minWidth: 0,
-                        maxWidth: double.infinity,
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.translationValues(0, squishV, 0)
-                            ..multiply(Matrix4.diagonal3Values(
-                                1 - 0.05 * squishV, 1 - 0.05 * squishV, 1)),
-                          child: child,
+        // Header pinned to the pill lobe. The island capsule has no header —
+        // its icon lives in the chin below the cutout.
+        if (!_isIsland)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: _pillH,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_dims, _headerSquish]),
+              builder: (context, child) {
+                final left = (_dims.bodyW - _headerContentW) / 2;
+                final squishV = _headerSquish.value.clamp(-0.3, 1.3);
+                return Padding(
+                  padding: EdgeInsets.only(left: math.max(left, 0)),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ClipRect(
+                      child: SizedBox(
+                        // +1.5 slack absorbs sub-pixel rounding; the blob path
+                        // is the true visual boundary anyway.
+                        width: math.max(0, _headerContentW) + 1.5,
+                        height: _pillH,
+                        child: OverflowBox(
+                          alignment: Alignment.centerLeft,
+                          minWidth: 0,
+                          maxWidth: double.infinity,
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.translationValues(0, squishV, 0)
+                              ..multiply(Matrix4.diagonal3Values(
+                                  1 - 0.05 * squishV, 1 - 0.05 * squishV, 1)),
+                            child: child,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _headerRow(style),
+                );
+              },
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _headerRow(style),
+              ),
             ),
           ),
-        ),
       ],
     );
   }

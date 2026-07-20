@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+- **Configurable timings** — new `SoleToastTimings` with per-phase durations,
+  a `fast` preset (readable content in ~350–400 ms for action feedback), a
+  `scaled()` factory for uniform pace control, and a
+  `SoleToastConfig.timings` field.
+- **Dynamic Island redesign** — the icon now melts out in a gooey chin
+  *beneath* the cutout instead of a side lobe, so it can never collide with
+  the status-bar clock, signal, or battery indicators. The sheet then
+  continues downward through the title and description.
+- `SoleToastIcon` gained crossfade reuse inside the island chin.
+
 ## 0.1.1
 
 - README images now use absolute URLs so they render on pub.dev.

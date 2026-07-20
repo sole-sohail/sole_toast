@@ -48,6 +48,91 @@ enum SoleToastPreset {
   final double bounce;
 }
 
+/// Stage durations (milliseconds) for the toast choreography.
+///
+/// The defaults reproduce the original relaxed feel (~1.5 s until an
+/// expanded toast is fully readable). For quick feedback after user
+/// actions, use [fast] (~350–400 ms to readable content) or derive a
+/// custom pace with [SoleToastTimings.scaled].
+@immutable
+class SoleToastTimings {
+  const SoleToastTimings({
+    this.enterMs = 260,
+    this.expandDelayMs = 330,
+    this.morphMs = 900,
+    this.bodyFadeMs = 350,
+    this.collapseMs = 900,
+    this.lingerMs = 800,
+    this.exitMs = 220,
+    this.islandEnterMs = 150,
+    this.islandIconHoldMs = 620,
+  });
+
+  /// The original, relaxed choreography.
+  static const SoleToastTimings normal = SoleToastTimings();
+
+  /// Snappy entrance for action feedback: the description is readable in
+  /// roughly 350–400 ms while keeping the gooey morph style.
+  static const SoleToastTimings fast = SoleToastTimings(
+    enterMs: 130,
+    expandDelayMs: 40,
+    morphMs: 420,
+    bodyFadeMs: 160,
+    collapseMs: 480,
+    lingerMs: 420,
+    exitMs: 160,
+    islandEnterMs: 90,
+    islandIconHoldMs: 220,
+  );
+
+  /// Uniform pace control: every phase of [normal] divided by [speed]
+  /// (`2.0` → twice as fast, `0.5` → half speed).
+  factory SoleToastTimings.scaled(double speed) {
+    assert(speed > 0);
+    int s(int ms) => (ms / speed).round().clamp(1, 60000);
+    const n = SoleToastTimings.normal;
+    return SoleToastTimings(
+      enterMs: s(n.enterMs),
+      expandDelayMs: s(n.expandDelayMs),
+      morphMs: s(n.morphMs),
+      bodyFadeMs: s(n.bodyFadeMs),
+      collapseMs: s(n.collapseMs),
+      lingerMs: s(n.lingerMs),
+      exitMs: s(n.exitMs),
+      islandEnterMs: s(n.islandEnterMs),
+      islandIconHoldMs: s(n.islandIconHoldMs),
+    );
+  }
+
+  /// Pill slide/fade-in duration.
+  final int enterMs;
+
+  /// Pause on the compact pill before the body starts melting out.
+  final int expandDelayMs;
+
+  /// Nominal duration of the expand morph spring (also collapse spring
+  /// when springs are enabled).
+  final int morphMs;
+
+  /// Description/action fade-in duration.
+  final int bodyFadeMs;
+
+  /// Fold-up duration back to the pill.
+  final int collapseMs;
+
+  /// How long the bare pill lingers after folding before it exits.
+  final int lingerMs;
+
+  /// Exit slide/fade duration.
+  final int exitMs;
+
+  /// Island capsule fade-in duration.
+  final int islandEnterMs;
+
+  /// How long the island holds the icon chin before the sheet continues.
+  final int islandIconHoldMs;
+}
+
 /// An optional button rendered inside the expanded toast body.
 @immutable
 class SoleToastAction {
@@ -87,6 +172,7 @@ class SoleToastConfig {
     this.showProgress = false,
     this.showTimestamp = false,
     this.enableHaptics = true,
+    this.timings = SoleToastTimings.normal,
   })  : assert(bounce >= 0.0 && bounce <= 0.8, 'bounce must be 0.0–0.8'),
         assert(maxVisible > 0),
         assert(pillHeight >= 28);
@@ -137,6 +223,10 @@ class SoleToastConfig {
   /// Fire light haptic feedback on show / error shake / action tap.
   final bool enableHaptics;
 
+  /// Stage durations for the choreography. Use [SoleToastTimings.fast] for
+  /// near-instant action feedback.
+  final SoleToastTimings timings;
+
   SoleToastConfig copyWith({
     SoleToastMode? mode,
     SoleToastPosition? position,
@@ -152,6 +242,7 @@ class SoleToastConfig {
     bool? showProgress,
     bool? showTimestamp,
     bool? enableHaptics,
+    SoleToastTimings? timings,
   }) {
     return SoleToastConfig(
       mode: mode ?? this.mode,
@@ -168,6 +259,7 @@ class SoleToastConfig {
       showProgress: showProgress ?? this.showProgress,
       showTimestamp: showTimestamp ?? this.showTimestamp,
       enableHaptics: enableHaptics ?? this.enableHaptics,
+      timings: timings ?? this.timings,
     );
   }
 }

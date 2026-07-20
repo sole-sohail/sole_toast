@@ -131,6 +131,7 @@ class _DemoPageState extends State<DemoPage> {
   double _bounce = 0.4;
   bool _withDescription = true;
   bool _showProgress = false;
+  bool _fastTimings = false;
 
   void _applyConfig() {
     SoleToast.config = SoleToast.config.copyWith(
@@ -138,6 +139,7 @@ class _DemoPageState extends State<DemoPage> {
       islandMode: _islandMode,
       bounce: _bounce,
       showProgress: _showProgress,
+      timings: _fastTimings ? SoleToastTimings.fast : SoleToastTimings.normal,
     );
   }
 
@@ -190,6 +192,15 @@ class _DemoPageState extends State<DemoPage> {
             title: const Text('Description body'),
             value: _withDescription,
             onChanged: (v) => setState(() => _withDescription = v),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Fast timings (instant feedback)'),
+            value: _fastTimings,
+            onChanged: (v) {
+              setState(() => _fastTimings = v);
+              _applyConfig();
+            },
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,

@@ -3,7 +3,7 @@ description: >-
   A gooey, morphing toast for Flutter — organic pill-to-blob animation,
   light/dark/glossy modes, semantic types, and iPhone Dynamic Island
   choreography. Zero dependencies.
-version: 0.1.1
+version: 0.2.0
 homepage: https://github.com/sole-sohail/sole_toast
 repository: https://github.com/sole-sohail/sole_toast
 issue_tracker: https://github.com/sole-sohail/sole_toast/issues

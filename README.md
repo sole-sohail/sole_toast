@@ -49,8 +49,8 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
 
 <table>
   <tr>
-    <td align="center"><b>1 — icon docks beside the island</b></td>
-    <td align="center"><b>2 — the sheet melts down beneath it</b></td>
+    <td align="center"><b>1 — the icon melts out beneath the island</b></td>
+    <td align="center"><b>2 — the sheet continues down</b></td>
   </tr>
   <tr>
     <td><img src="https://raw.githubusercontent.com/sole-sohail/sole_toast/main/doc/images/island_icon.png" alt="Icon docked beside the Dynamic Island" width="380"/></td>
@@ -104,9 +104,11 @@ backdrop blur renders on all platforms with Flutter's default renderer.
   (backdrop blur + translucent tint + specular sheen + hairline border) that
   adapts to the app's brightness.
 - **Dynamic Island choreography** — on island iPhones the toast docks to the
-  hardware cutout: the icon appears beside the island, then a black sheet
-  slides down beneath it revealing the title and content. Auto-detected, can
-  be forced for demos or disabled entirely.
+  hardware cutout: a gooey chin melts out beneath the island revealing the
+  type icon, then the sheet continues down through the title and content.
+  Everything reveals downward, so it never collides with the status-bar
+  clock, signal, or battery. Auto-detected, can be forced for demos or
+  disabled entirely.
 - **Physics everywhere** — expand/collapse springs, a landing squish, a
   header squish, an error shake, icon draw-in strokes, and a single `bounce`
   dial (0.05–0.8) that tunes them all. Presets: `smooth`, `bouncy`,
@@ -129,7 +131,7 @@ Or add it to `pubspec.yaml` manually:
 
 ```yaml
 dependencies:
-  sole_toast: ^0.1.1
+  sole_toast: ^0.2.0
 ```
 
 ## Setup
@@ -217,10 +219,34 @@ SoleToast.config = const SoleToastConfig(
   showProgress: false,
   showTimestamp: false,
   enableHaptics: true,
+  timings: SoleToastTimings.normal,  // or .fast / .scaled(1.5)
 );
 
 // Or start from a preset:
 SoleToast.config = SoleToastConfig.preset(SoleToastPreset.bouncy);
+```
+
+### Timing & pace
+
+The default choreography is relaxed (~1.5 s until an expanded toast is fully
+readable). For instant action feedback, switch the pace:
+
+```dart
+// Readable content in ~350–400 ms, same gooey style:
+SoleToast.config =
+    SoleToast.config.copyWith(timings: SoleToastTimings.fast);
+
+// Uniformly scale every phase (2.0 = twice as fast):
+SoleToast.config =
+    SoleToast.config.copyWith(timings: SoleToastTimings.scaled(2.0));
+
+// Or tune each phase individually:
+SoleToast.config = SoleToast.config.copyWith(
+  timings: const SoleToastTimings(
+    enterMs: 150, expandDelayMs: 50, morphMs: 500,
+    bodyFadeMs: 200, collapseMs: 600, lingerMs: 500,
+  ),
+);
 ```
 
 ## Surface modes
@@ -240,12 +266,13 @@ On iPhones with a Dynamic Island (detected automatically in portrait via the
 59 pt top view padding), toasts dock to the cutout instead of dropping from
 the top edge:
 
-1. A black capsule hugs the island and grows a lobe to the side, revealing
-   the type icon **beside the island** (the space next to the cutout is
-   shared with the system clock and battery, so the capsule stays compact
-   and never collides with them).
-2. A black sheet **slides down** beneath the island with the gooey morph,
-   revealing the **title** first…
+1. A black capsule hugs the island and a gooey **chin melts out beneath the
+   cutout**, revealing the type icon centered inside it. Nothing ever grows
+   sideways — the system clock, signal, and battery flank the island, so
+   the choreography reveals strictly downward and can never collide with
+   them on any device.
+2. The sheet **continues down** with the gooey morph, revealing the
+   **title**…
 3. …then the **description and action**, expanded-Live-Activity style. On
    dismiss it folds back up into the island.
 

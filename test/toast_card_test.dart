@@ -167,6 +167,30 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('fast timings make the toast readable in well under a second',
+      (tester) async {
+    final data = SoleToastData(
+      id: 9,
+      type: SoleToastType.success,
+      title: 'Saved',
+      description: 'Fast feedback.',
+    );
+    await tester.pumpWidget(_harness(
+      data,
+      config: const SoleToastConfig(
+          enableHaptics: false, timings: SoleToastTimings.fast),
+      onExited: (_) {},
+    ));
+    await tester.pump();
+    await _pumpFor(tester, 350);
+    // Body content is on screen (expanding or fully shown) by ~350 ms.
+    expect(_state(tester).stage,
+        anyOf(SoleCardStage.expanding, SoleCardStage.shown));
+    await _pumpFor(tester, 650);
+    expect(_state(tester).stage, SoleCardStage.shown);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('island choreography reaches the expanded body', (tester) async {
     const mq = MediaQueryData(
       size: Size(390, 844),

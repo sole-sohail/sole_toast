@@ -64,6 +64,7 @@ Real, unedited captures from the example app on an iPhone 16 Pro.
 
 - [Gallery](#gallery)
 - [Platform support](#platform-support)
+- [Text effects](#text-effects)
 - [Features](#features)
 - [Installation](#installation)
 - [Setup](#setup)
@@ -131,7 +132,7 @@ Or add it to `pubspec.yaml` manually:
 
 ```yaml
 dependencies:
-  sole_toast: ^0.2.0
+  sole_toast: ^0.3.0
 ```
 
 ## Setup
@@ -225,6 +226,35 @@ SoleToast.config = const SoleToastConfig(
 // Or start from a preset:
 SoleToast.config = SoleToastConfig.preset(SoleToastPreset.bouncy);
 ```
+
+### Text effects
+
+Reveal the description like it's being typed live — or let words wash in.
+Both effects are engineered for smoothness: the full text is laid out from
+the first frame and only glyph opacity animates, so nothing reflows, line
+wraps never shift, and RTL text works unchanged. The display timer is
+extended by the reveal time, so the animation never eats reading time.
+
+```dart
+// Globally:
+SoleToast.config = SoleToast.config.copyWith(
+  textEffect: const SoleTextEffect.typewriter(), // blinking accent caret
+);
+
+// Or per toast:
+SoleToast.success('Report ready',
+    description: 'Q2 report has been generated and shared for review.',
+    textEffect: const SoleTextEffect.typewriter(charsPerSecond: 45));
+
+SoleToast.info('Heads up',
+    description: 'Maintenance window starts at midnight.',
+    textEffect: const SoleTextEffect.fadeWords());
+```
+
+`typewriter` accepts `charsPerSecond` (default 35), `showCaret`, and a
+`maxDuration` cap so long texts speed up instead of dragging. Reduced-motion
+users see the text instantly. The underlying widget is exported as
+`SoleEffectText` if you want the same reveal outside a toast.
 
 ### Timing & pace
 

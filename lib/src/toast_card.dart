@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'blob_painter.dart';
+import 'effect_text.dart';
 import 'icons.dart';
 import 'island.dart';
 import 'measure.dart';
@@ -355,9 +356,18 @@ class SoleToastCardState extends State<SoleToastCard>
   int get _displayMsSimple =>
       (data.duration ?? config.displayDuration).inMilliseconds;
 
+  SoleTextEffect get _textEffect =>
+      data.textEffectOverride ?? config.textEffect;
+
+  /// Reveal time for the current description (0 when no effect is active).
+  int get _revealMs => _reduced || data.description == null
+      ? 0
+      : _textEffect.revealDuration(data.description!.length).inMilliseconds;
+
   int get _displayMsExpanded {
     final total = (data.duration ?? config.displayDuration).inMilliseconds;
-    final ms = total - _ms(_t.expandDelayMs) - _t.collapseMs;
+    // The reveal extends the window so animation never eats reading time.
+    final ms = total - _ms(_t.expandDelayMs) - _t.collapseMs + _revealMs;
     return math.max(ms, 800);
   }
 
@@ -923,8 +933,17 @@ class SoleToastCardState extends State<SoleToastCard>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            description,
+                          child: SoleEffectText(
+                            // Measure pass renders plain text; the live copy
+                            // plays the reveal once the body melts open.
+                            effect: measuring
+                                ? const SoleTextEffect.none()
+                                : _textEffect,
+                            play: _bodyVisible &&
+                                _stage.index >= SoleCardStage.expanding.index,
+                            reduced: _reduced,
+                            caretColor: style.accent,
+                            text: description,
                             style: TextStyle(
                               color: style.ink,
                               fontSize: 13,

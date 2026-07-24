@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- **Text effects** — `SoleTextEffect.typewriter()` reveals the description
+  like live typing (soft per-character fade head, blinking accent caret,
+  `charsPerSecond` + `maxDuration` controls) and `SoleTextEffect.fadeWords()`
+  washes words in sequentially. Configurable globally
+  (`SoleToastConfig.textEffect`) or per toast (`textEffect:`). The display
+  timer is extended by the reveal duration; reduced motion shows text
+  instantly. Full text is laid out from the first frame — no reflow, RTL
+  safe. `SoleEffectText` is exported for standalone use.
+
 ## 0.2.0
 
 - **Configurable timings** — new `SoleToastTimings` with per-phase durations,

@@ -48,6 +48,68 @@ enum SoleToastPreset {
   final double bounce;
 }
 
+/// How the description text is revealed inside the toast body.
+enum SoleTextEffectKind { none, typewriter, fadeWords }
+
+/// Text-reveal effect for the toast description.
+///
+/// The full text is laid out immediately and only glyph opacity animates,
+/// so the reveal is perfectly smooth: no reflow, no line-wrap shifting, and
+/// right-to-left text works unchanged. The display timer is extended by the
+/// reveal duration, so reading time is never consumed by the animation.
+@immutable
+class SoleTextEffect {
+  /// Text appears instantly (the default).
+  const SoleTextEffect.none()
+      : kind = SoleTextEffectKind.none,
+        charsPerSecond = 0,
+        showCaret = false,
+        maxDuration = Duration.zero;
+
+  /// Live-typing reveal: characters fade in one after another behind a
+  /// soft head, with an optional blinking caret in the accent color.
+  const SoleTextEffect.typewriter({
+    this.charsPerSecond = 35,
+    this.showCaret = true,
+    this.maxDuration = const Duration(milliseconds: 2200),
+  })  : assert(charsPerSecond > 0),
+        kind = SoleTextEffectKind.typewriter;
+
+  /// Words wash in sequentially with a gentle overlapping fade.
+  const SoleTextEffect.fadeWords({
+    this.maxDuration = const Duration(milliseconds: 1400),
+  })  : kind = SoleTextEffectKind.fadeWords,
+        charsPerSecond = 0,
+        showCaret = false;
+
+  final SoleTextEffectKind kind;
+
+  /// Typing speed. Long texts speed up automatically so the reveal never
+  /// exceeds [maxDuration].
+  final double charsPerSecond;
+
+  /// Whether the typewriter shows a caret at the typing head.
+  final bool showCaret;
+
+  /// Upper bound for the whole reveal.
+  final Duration maxDuration;
+
+  /// Total reveal time for a text of [length] characters.
+  Duration revealDuration(int length) {
+    switch (kind) {
+      case SoleTextEffectKind.none:
+        return Duration.zero;
+      case SoleTextEffectKind.typewriter:
+        final ms = (length / charsPerSecond * 1000).round();
+        return ms > maxDuration.inMilliseconds
+            ? maxDuration
+            : Duration(milliseconds: ms);
+      case SoleTextEffectKind.fadeWords:
+        return maxDuration;
+    }
+  }
+}
+
 /// Stage durations (milliseconds) for the toast choreography.
 ///
 /// The defaults reproduce the original relaxed feel (~1.5 s until an
@@ -173,6 +235,7 @@ class SoleToastConfig {
     this.showTimestamp = false,
     this.enableHaptics = true,
     this.timings = SoleToastTimings.normal,
+    this.textEffect = const SoleTextEffect.none(),
   })  : assert(bounce >= 0.0 && bounce <= 0.8, 'bounce must be 0.0–0.8'),
         assert(maxVisible > 0),
         assert(pillHeight >= 28);
@@ -227,6 +290,9 @@ class SoleToastConfig {
   /// near-instant action feedback.
   final SoleToastTimings timings;
 
+  /// Default text-reveal effect for descriptions. See [SoleTextEffect].
+  final SoleTextEffect textEffect;
+
   SoleToastConfig copyWith({
     SoleToastMode? mode,
     SoleToastPosition? position,
@@ -243,6 +309,7 @@ class SoleToastConfig {
     bool? showTimestamp,
     bool? enableHaptics,
     SoleToastTimings? timings,
+    SoleTextEffect? textEffect,
   }) {
     return SoleToastConfig(
       mode: mode ?? this.mode,
@@ -260,6 +327,7 @@ class SoleToastConfig {
       showTimestamp: showTimestamp ?? this.showTimestamp,
       enableHaptics: enableHaptics ?? this.enableHaptics,
       timings: timings ?? this.timings,
+      textEffect: textEffect ?? this.textEffect,
     );
   }
 }

@@ -15,6 +15,7 @@ class SoleToastData extends ChangeNotifier {
     this.duration,
     this.modeOverride,
     this.showProgressOverride,
+    this.textEffectOverride,
     this.onDismiss,
     bool loading = false,
   })  : _type = type,
@@ -33,6 +34,9 @@ class SoleToastData extends ChangeNotifier {
 
   /// Per-toast progress bar override (null → config default).
   final bool? showProgressOverride;
+
+  /// Per-toast text-reveal effect override (null → config default).
+  final SoleTextEffect? textEffectOverride;
 
   /// Invoked once when the toast leaves the screen (any reason).
   VoidCallback? onDismiss;

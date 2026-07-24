@@ -45,6 +45,7 @@ abstract final class SoleToast {
     Duration? duration,
     SoleToastMode? mode,
     bool? showProgress,
+    SoleTextEffect? textEffect,
     Object? id,
     VoidCallback? onDismiss,
   }) {
@@ -63,6 +64,7 @@ abstract final class SoleToast {
       duration: duration,
       modeOverride: mode,
       showProgressOverride: showProgress,
+      textEffectOverride: textEffect,
       onDismiss: onDismiss,
     );
     _announce(title, description, type);
@@ -76,6 +78,7 @@ abstract final class SoleToast {
           Duration? duration,
           SoleToastMode? mode,
           bool? showProgress,
+          SoleTextEffect? textEffect,
           Object? id,
           VoidCallback? onDismiss}) =>
       show(title,
@@ -85,6 +88,7 @@ abstract final class SoleToast {
           duration: duration,
           mode: mode,
           showProgress: showProgress,
+          textEffect: textEffect,
           id: id,
           onDismiss: onDismiss);
 
@@ -95,6 +99,7 @@ abstract final class SoleToast {
           Duration? duration,
           SoleToastMode? mode,
           bool? showProgress,
+          SoleTextEffect? textEffect,
           Object? id,
           VoidCallback? onDismiss}) =>
       show(title,
@@ -104,6 +109,7 @@ abstract final class SoleToast {
           duration: duration,
           mode: mode,
           showProgress: showProgress,
+          textEffect: textEffect,
           id: id,
           onDismiss: onDismiss);
 
@@ -114,6 +120,7 @@ abstract final class SoleToast {
           Duration? duration,
           SoleToastMode? mode,
           bool? showProgress,
+          SoleTextEffect? textEffect,
           Object? id,
           VoidCallback? onDismiss}) =>
       show(title,
@@ -123,6 +130,7 @@ abstract final class SoleToast {
           duration: duration,
           mode: mode,
           showProgress: showProgress,
+          textEffect: textEffect,
           id: id,
           onDismiss: onDismiss);
 
@@ -133,6 +141,7 @@ abstract final class SoleToast {
           Duration? duration,
           SoleToastMode? mode,
           bool? showProgress,
+          SoleTextEffect? textEffect,
           Object? id,
           VoidCallback? onDismiss}) =>
       show(title,
@@ -142,6 +151,7 @@ abstract final class SoleToast {
           duration: duration,
           mode: mode,
           showProgress: showProgress,
+          textEffect: textEffect,
           id: id,
           onDismiss: onDismiss);
 

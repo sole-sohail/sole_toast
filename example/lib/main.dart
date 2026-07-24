@@ -121,6 +121,14 @@ class _DemoPageState extends State<DemoPage> {
             base(SoleToastMode.glossy, island: SoleIslandMode.auto);
         SoleToast.success('Saved',
             description: 'Your changes have been synced.', duration: long);
+      case 'typewriter':
+        SoleToast.config = base(SoleToastMode.glossy);
+        SoleToast.success('Report ready',
+            description:
+                'Q2 attendance report has been generated and shared with '
+                'your manager for review.',
+            textEffect: const SoleTextEffect.typewriter(),
+            duration: long);
       case 'banner':
         setState(() => _bannerMode = true);
     }
@@ -132,6 +140,7 @@ class _DemoPageState extends State<DemoPage> {
   bool _withDescription = true;
   bool _showProgress = false;
   bool _fastTimings = false;
+  bool _typewriter = false;
 
   void _applyConfig() {
     SoleToast.config = SoleToast.config.copyWith(
@@ -140,6 +149,9 @@ class _DemoPageState extends State<DemoPage> {
       bounce: _bounce,
       showProgress: _showProgress,
       timings: _fastTimings ? SoleToastTimings.fast : SoleToastTimings.normal,
+      textEffect: _typewriter
+          ? const SoleTextEffect.typewriter()
+          : const SoleTextEffect.none(),
     );
   }
 
@@ -192,6 +204,15 @@ class _DemoPageState extends State<DemoPage> {
             title: const Text('Description body'),
             value: _withDescription,
             onChanged: (v) => setState(() => _withDescription = v),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Typewriter description'),
+            value: _typewriter,
+            onChanged: (v) {
+              setState(() => _typewriter = v);
+              _applyConfig();
+            },
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
